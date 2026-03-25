@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phishing Analyser</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --creme:      #C9A882;
+      --creme-dim:  rgba(201, 168, 130, 0.6);
+      --mocha:      #7B4F3A;
+      --espresso:   #4A2C22;
+      --dark-choc:  #1A0F0A;
+      --border:     rgba(201, 168, 130, 0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--dark-choc);
+      color: var(--creme);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+      color: var(--creme);
+    }
+
+    .subtitle {
+      color: var(--creme-dim);
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--mocha);
+      background: var(--espresso);
+      color: var(--creme);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]::placeholder { color: var(--creme-dim); }
+    input[type="text"]:focus { border-color: var(--creme); }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      border-radius: 10px;
+      border: none;
+      background: var(--mocha);
+      color: var(--creme);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      white-space: nowrap;
+    }
+
+    button:hover { background: var(--creme); color: var(--dark-choc); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .status {
+      text-align: center;
+      color: var(--creme-dim);
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      min-height: 1.2rem;
+    }
+
+    .result-card {
+      background: var(--espresso);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      display: none;
+      margin-bottom: 1.5rem;
+    }
+
+    .verdict-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 1rem;
+      border-radius: 999px;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .verdict-VEILIG     { background: rgba(80, 140, 80, 0.15); color: #8BBF7A; border: 1px solid rgba(80, 140, 80, 0.35); }
+    .verdict-VERDACHT   { background: rgba(200, 120, 40, 0.15); color: #E8944A; border: 1px solid rgba(200, 120, 40, 0.35); }
+    .verdict-GEVAARLIJK { background: rgba(200, 60, 60, 0.15);  color: #E87070; border: 1px solid rgba(200, 60, 60, 0.35); }
+
+    .url-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--creme);
+      word-break: break-all;
+      margin-bottom: 1.5rem;
+      line-height: 1.4;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0.5rem;
+    }
+
+    .stat-box {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 10px;
+      padding: 0.85rem 0.5rem;
+      text-align: center;
+      border: 1px solid rgba(201, 168, 130, 0.1);
+    }
+
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 0.35rem;
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      color: var(--creme-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-weight: 500;
+    }
+
+    .color-malicious  { color: #E87070; }
+    .color-suspicious { color: #E8944A; }
+    .color-harmless   { color: #7DBF82; }
+    .color-undetected { color: var(--creme-dim); }
+    .color-timeout    { color: var(--creme); }
+    .color-totaal     { color: var(--creme); }
+
+    .timestamp {
+      margin-top: 1rem;
+      font-size: 0.75rem;
+      color: rgba(201, 168, 130, 0.4);
+      text-align: right;
+    }
+
+    .error-msg {
+      background: #4A1A1A;
+      border: 1px solid #7A2A2A;
+      color: #E87070;
+      padding: 0.9rem 1.2rem;
+      border-radius: 10px;
+      display: none;
+      margin-bottom: 1rem;
+    }
+
+    /* Geschiedenis tabel */
+    .geschiedenis-sectie {
+      width: 100%;
+      max-width: 1000px;
+      margin-top: 2.5rem;
+    }
+
+    .geschiedenis-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .geschiedenis-header h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--creme);
+    }
+
+    .geschiedenis-header span {
+      font-size: 0.8rem;
+      color: var(--creme-dim);
+    }
+
+    .tabel-wrapper {
+      background: var(--espresso);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    thead tr {
+      background: var(--dark-choc);
+      border-bottom: 1px solid var(--mocha);
+    }
+
+    thead th {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      color: var(--creme-dim);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(201, 168, 130, 0.08);
+      transition: background 0.15s;
+    }
+
+    tbody tr:nth-child(even) { background: rgba(26, 15, 10, 0.5); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(201, 168, 130, 0.07); }
+
+    tbody td {
+      padding: 0.75rem 1rem;
+      color: var(--creme);
+      vertical-align: middle;
+    }
+
+    .td-url {
+      max-width: 420px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--creme);
+      opacity: 0.85;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.65rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-VEILIG     { background: rgba(80, 140, 80, 0.15); color: #8BBF7A; border: 1px solid rgba(80, 140, 80, 0.35); }
+    .badge-VERDACHT   { background: rgba(200, 120, 40, 0.15); color: #E8944A; border: 1px solid rgba(200, 120, 40, 0.35); }
+    .badge-GEVAARLIJK { background: rgba(200, 60, 60, 0.15);  color: #E87070; border: 1px solid rgba(200, 60, 60, 0.35); }
+
+    .td-nummer { color: var(--creme-dim); font-variant-numeric: tabular-nums; }
+
+    .leeg-melding {
+      text-align: center;
+      color: var(--creme-dim);
+      padding: 2rem;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Phishing Analyser</h1>
+    <p class="subtitle">Check a URL for phishing and malware via VirusTotal.</p>
+
+    <div class="input-row">
+      <input type="text" id="url-input" placeholder="https://example.com" />
+      <button id="scan-btn" onclick="startScan()">Scan</button>
+    </div>
+
+    <p class="status" id="status"></p>
+    <div class="error-msg" id="error-box"></div>
+
+    <div class="result-card" id="result-card">
+      <div class="verdict-banner" id="verdict-banner"></div>
+      <p class="url-label" id="url-label"></p>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-number color-malicious" id="s-malicious">0</div>
+          <div class="stat-label">Malicious</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number color-suspicious" id="s-suspicious">0</div>
+          <div class="stat-label">Suspicious</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number color-harmless" id="s-harmless">0</div>
+          <div class="stat-label">Harmless</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number color-undetected" id="s-undetected">0</div>
+          <div class="stat-label">Undetected</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number color-timeout" id="s-timeout">0</div>
+          <div class="stat-label">Timeout</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number color-totaal" id="s-totaal">0</div>
+          <div class="stat-label">Total</div>
+        </div>
+      </div>
+      <p class="timestamp" id="timestamp"></p>
+    </div>
+  </div>
+
+  <div class="geschiedenis-sectie">
+    <div class="geschiedenis-header">
+      <h2>Scan History</h2>
+      <span id="scan-teller">0 scans</span>
+    </div>
+    <div class="tabel-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>URL</th>
+            <th>Verdict</th>
+            <th>Malicious</th>
+            <th>Harmless</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="geschiedenis-body">
+          <tr><td colspan="6" class="leeg-melding">No scans performed yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const verdictMap = { VEILIG: "SAFE", VERDACHT: "SUSPICIOUS", GEVAARLIJK: "DANGEROUS" };
+
+    laadGeschiedenis();
+
+    async function startScan() {
+      const url = document.getElementById("url-input").value.trim();
+      const btn = document.getElementById("scan-btn");
+      const status = document.getElementById("status");
+      const errorBox = document.getElementById("error-box");
+      const resultCard = document.getElementById("result-card");
+
+      errorBox.style.display = "none";
+      resultCard.style.display = "none";
+
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        errorBox.textContent = "Invalid URL. Make sure the URL starts with http:// or https://";
+        errorBox.style.display = "block";
+        return;
+      }
+
+      btn.disabled = true;
+      status.textContent = "URL submitted. Waiting for analysis (15 seconds)...";
+
+      try {
+        const response = await fetch("/scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Unknown error");
+
+        status.textContent = "";
+        toonResultaat(data);
+        laadGeschiedenis();
+
+      } catch (err) {
+        status.textContent = "";
+        errorBox.textContent = "Error: " + err.message;
+        errorBox.style.display = "block";
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function toonResultaat(data) {
+      const verdictLabel = { VEILIG: "SAFE", VERDACHT: "SUSPICIOUS", GEVAARLIJK: "DANGEROUS" };
+      const banner = document.getElementById("verdict-banner");
+      banner.textContent = verdictLabel[data.verdict];
+      banner.className = `verdict-banner verdict-${data.verdict}`;
+
+      document.getElementById("url-label").textContent = data.url;
+      document.getElementById("s-malicious").textContent  = data.stats.malicious;
+      document.getElementById("s-suspicious").textContent = data.stats.suspicious;
+      document.getElementById("s-harmless").textContent   = data.stats.harmless;
+      document.getElementById("s-undetected").textContent = data.stats.undetected;
+      document.getElementById("s-timeout").textContent    = data.stats.timeout;
+      document.getElementById("s-totaal").textContent     = data.stats.totaal;
+
+      const ts = new Date(data.timestamp);
+      document.getElementById("timestamp").textContent = `Scanned on ${ts.toLocaleString("en-GB")}`;
+      document.getElementById("result-card").style.display = "block";
+    }
+
+    async function laadGeschiedenis() {
+      const tbody = document.getElementById("geschiedenis-body");
+      const teller = document.getElementById("scan-teller");
+
+      try {
+        const response = await fetch("/geschiedenis");
+        const logs = await response.json();
+
+        teller.textContent = `${logs.length} scan${logs.length !== 1 ? "s" : ""}`;
+
+        if (logs.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="leeg-melding">No scans performed yet.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = logs.map((log, i) => {
+          const ts = new Date(log.timestamp).toLocaleString("en-GB");
+          return `
+            <tr>
+              <td class="td-nummer">${logs.length - i}</td>
+              <td class="td-url" title="${log.url}">${log.url}</td>
+              <td><span class="badge badge-${log.verdict}">${verdictMap[log.verdict]}</span></td>
+              <td class="color-malicious td-nummer">${log.stats.malicious}</td>
+              <td class="color-harmless td-nummer">${log.stats.harmless}</td>
+              <td style="color:rgba(201,168,130,0.5);font-size:0.8rem">${ts}</td>
+            </tr>`;
+        }).join("");
+
+      } catch {
+        tbody.innerHTML = `<tr><td colspan="6" class="leeg-melding">Could not load scan history.</td></tr>`;
+      }
+    }
+
+    document.getElementById("url-input").addEventListener("keydown", e => {
+      if (e.key === "Enter") startScan();
+    });
+  </script>
+</body>
+</html>

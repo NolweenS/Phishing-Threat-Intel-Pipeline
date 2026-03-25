@@ -1,1 +1,5 @@
 .env
+scan_log.json
+threats.json
+__pycache__/
+*.pyc
