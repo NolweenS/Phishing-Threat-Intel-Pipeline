@@ -10,7 +10,7 @@ This project was inspired by a visit to Agoria, where it became clear that cyber
 
 At companies like Sopra Steria, the principle is always: security first, then functionality. A script with an API key hardcoded directly in the source code would be rejected immediately. That insight was the motivation to build this project according to real enterprise standards: modular code, secure configuration, error handling, and documentation.
 
-The concrete goal was to build a Python tool that scans a URL via the VirusTotal API, converts the JSON response from more than 90 scanning engines into a readable report — all done securely and robustly, and pushed to GitHub within a fixed deadline.
+The concrete goal was to build a Python tool that scans a URL via the VirusTotal API, converts the JSON response from more than 90 scanning engines into a readable report, all done securely and robustly, and pushed to GitHub within a fixed deadline.
 
 ---
 
