@@ -139,7 +139,7 @@ The verdict is determined based on configurable thresholds (set via `.env`):
 
 | Tool               | Purpose                            |
 |--------------------|------------------------------------|
-| Python 3.13        | Programming language               |
+| Python             | Programming language               |
 | Flask              | Web server and routing             |
 | VirusTotal API v3  | Source for threat intelligence     |
 | requests           | HTTP requests                      |
