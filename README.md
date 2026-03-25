@@ -6,7 +6,7 @@ An automated security pipeline that analyses suspicious URLs for phishing and ma
 
 ## Why this project?
 
-This project was inspired by a visit to Agoria, where it became clear that cybersecurity is not just about running tools — it is about building professional, reliable systems.
+This project was inspired by a visit to Agoria, where it became clear that cybersecurity is not just about running tools, it is about building professional, reliable systems.
 
 At companies like Sopra Steria, the principle is always: security first, then functionality. A script with an API key hardcoded directly in the source code would be rejected immediately. That insight was the motivation to build this project according to real enterprise standards: modular code, secure configuration, error handling, and documentation.
 
@@ -109,9 +109,9 @@ Then open `http://localhost:8080` in your browser.
 
 The pipeline runs in three steps:
 
-1. **Submit** — The URL is sent to VirusTotal via a POST request and an analysis ID is returned.
-2. **Wait** — The script waits 15 seconds for all scanning engines to complete their analysis.
-3. **Poll** — The report is fetched via a GET request and converted into a readable result.
+1. **Submit** : The URL is sent to VirusTotal via a POST request and an analysis ID is returned.
+2. **Wait** : The script waits 15 seconds for all scanning engines to complete their analysis.
+3. **Poll** : The report is fetched via a GET request and converted into a readable result.
 
 The verdict is determined based on configurable thresholds (set via `.env`):
 
@@ -153,8 +153,8 @@ The verdict is determined based on configurable thresholds (set via `.env`):
 
 All scan results are saved automatically (excluded from GitHub):
 
-- `scan_log.json` — every scan with timestamp, URL, verdict, and statistics
-- `threats.json` — only suspicious and dangerous URLs, with additional context
+- `scan_log.json` : every scan with timestamp, URL, verdict, and statistics
+- `threats.json` : only suspicious and dangerous URLs, with additional context
 
 ---
 
