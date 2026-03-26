@@ -28,16 +28,16 @@ The concrete goal was to build a Python tool that scans a URL via the VirusTotal
 
 ```
 Phishing-Threat-Intel-Pipeline/
-├── main.py              # Core logic: API functions, parsing, logging
-├── app.py               # Flask web server and routes
+├── main.py              
+├── app.py               
 ├── templates/
-│   └── index.html       # Web interface
+│   └── index.html       
 ├── images/
 │   ├── screenshot_scan.png
 │   └── screenshot_history.png
-├── scan_log.json        # Log of all scans (created automatically)
-├── threats.json         # Log of threats only (created automatically)
-├── .env                 # API key and thresholds (not on GitHub)
+├── scan_log.json        
+├── threats.json         
+├── .env                 
 ├── .gitignore
 └── requirements.txt
 ```
